@@ -8,6 +8,8 @@ Live documentation: <https://hurwitzlab.github.io/omics_with_R/>
 
 ## Workshops
 
+![](bioinfo_bonanza_R_cover.png)
+
 - **Foundations of R with the Tidyverse** (*r_tidyverse.pptx*)—
   R basics (objects, data types, vectors) and the dplyr core verbs (`filter`,
   `select`, `mutate`, `arrange`, `summarize`), group operations, and a first
