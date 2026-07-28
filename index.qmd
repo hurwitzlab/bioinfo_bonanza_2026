@@ -1,0 +1,52 @@
+---
+title: "R Crash Course"
+date: today
+format:
+  html:
+    theme: cosmo
+    toc: false
+    number-sections: false
+    code-copy: true
+---
+
+Welcome to the R Crash Course — part of a series of hands-on bioinformatics
+training workshops. Each workshop is a self-contained, roughly two-hour
+session; they don't depend on each other, so take them in whatever order
+suits you.
+
+## Workshops
+
+### [Foundations of R with the Tidyverse](r_tidyverse_workshop.html)
+
+Covers R basics (objects, data types, vectors) and the dplyr core verbs
+(`filter`, `select`, `mutate`, `arrange`, `summarize`), group operations, and
+a first `ggplot2` plot — using the built-in `starwars` dataset.
+
+### [Metagenomics 1: Taxonomy and Function](metagenomics_taxonomy_function.html)
+
+Covers what "-omics" means, amplicon vs. shotgun metagenomics, taxonomic and
+functional annotation pipelines, diversity metrics, and choosing an approach
+for a given research question.
+
+### [Metagenomics 2: Viruses & Plasmids](metagenomics_viruses_plasmids.html)
+
+Covers phage biology and applications, plasmid biology, and the specific
+challenges of detecting viruses and mobile genetic elements in metagenomic
+data.
+
+### [RNA-seq and Transcriptomics](rnaseq_workshop.html)
+
+Covers RNA-seq experimental design, the analysis workflow from raw reads to
+a differential expression results table, and interpreting DESeq2 output.
+
+### [Hot Topics in Bioinformatics](hot_topics_bioinformatics.html)
+
+A tour of long-read sequencing, Nextflow, containers, reproducibility and
+FAIR data, GitHub, and AI in bioinformatics (AlphaFold, LLMs, AI-assisted
+coding).
+
+### [Bioinformatics Tools: GitHub, HPC, and Cloud](bonus_bioinfo_tools.html)
+
+A bonus session covering the infrastructure underneath most bioinformatics
+work: version control with Git and GitHub, HPC cluster fundamentals, and
+cloud computing.

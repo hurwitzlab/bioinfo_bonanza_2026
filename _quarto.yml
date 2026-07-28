@@ -1,0 +1,22 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "R Crash Course"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: r_tidyverse_workshop.qmd
+        text: R Tidyverse
+      - href: metagenomics_taxonomy_function.qmd
+        text: Metagenomics 1
+      - href: metagenomics_viruses_plasmids.qmd
+        text: Metagenomics 2
+      - href: rnaseq_workshop.qmd
+        text: RNA-seq
+      - href: hot_topics_bioinformatics.qmd
+        text: Hot Topics
+      - href: bonus_bioinfo_tools.qmd
+        text: Bonus Tools
