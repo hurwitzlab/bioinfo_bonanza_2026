@@ -20,14 +20,15 @@ always the same: isolate RNA, convert it to complementary DNA (cDNA), and
 sequence it. What comes out the other end lets you identify, quantify, and
 analyze gene expression across whatever samples you're comparing.
 
+![](images/rna_process.png)
+
 That single technology, though, can be pointed at very different questions
 depending on how you set up the experiment. This document walks through the
-three major flavors of RNA-seq experiment (bulk, single-cell, and spatial),
-the bioinformatics workflow that turns raw sequencing reads into a usable
-count matrix, the statistics behind differential expression analysis, and how
-those counts can be extended into gene co-expression networks.
+one of the major flavors of RNA-seq experiment: bulk RNA-seq  (vs. single-cell, and spatial trancriptomics),the bioinformatics workflow that turns raw sequencing reads into a usable count matrix, the statistics and R script behind differential expression analysis, and how those counts can be extended into gene co-expression networks.
 
 ## Three Ways to Ask Transcriptomic Questions
+
+::: {.panel-tabset}
 
 ### Bulk RNA-seq
 
@@ -115,79 +116,16 @@ researchers investigate intratumoral complexity and the surrounding tumor
 environment in ways that neither bulk nor single-cell sequencing can, since
 both of those methods discard spatial position during sample processing.
 
+:::
+
 ### Comparing the three approaches
 
-| Aspect | Bulk RNA-seq | scRNA-seq | Spatial Transcriptomics |
-|---|---|---|---|
-| Definition | Gene expression across tissues and cell populations. | Sequencing of single cells to obtain their individual transcriptomes. | Simultaneous measurement of gene expression and the spatial location of cells. |
-| Sample processing | Direct RNA extraction and amplification of tissue or cell populations. | Isolation, lysis, and amplification of individual cells. | Sectioning or fixation according to sample needs. |
-| Experimental cost | Relatively low. | Higher. | Higher. |
-| Data quality | Affected by RNA extraction and amplification quality; some batch effect. | Harder to obtain high-quality data — fluorescent labeling of individual cells and library prep both introduce noise. | Can be difficult, but provides high-precision spatial information. |
-| Data analysis | Relatively simple; commonly uses standard differential expression methods. | Complex — requires analysis of individual cell characteristics. | Needs to combine molecular biology, imaging, and other fields for a full picture. |
-| Best suited for | Studying overall gene expression and function across tissues or populations. | Studying individual cell phenotypes and developmental trajectories. | Studying the spatial structure of cell types and cellular interactions within tissue. |
+![](images/rna_seq-comparison.png)
 
 In one line: bulk RNA-seq tells you *what* genes are expressed, single-cell
 RNA-seq tells you *which cell types* express them, and spatial
 transcriptomics tells you *where* in the tissue they're expressed.
 
-## Choosing the Right Approach: Worked Examples
-
-Picking among the three approaches comes down to matching the resolution of
-the method to the resolution of the question you're actually asking. The
-following scenarios walk through that reasoning.
-
-**Chemotherapy resistance in a feline mammary tumor.** Suppose you're
-studying why some cells in a tumor resist chemotherapy while others don't,
-and you suspect that different tumor subpopulations are behaving differently.
-Bulk RNA-seq would average signals across all the cells in the sample,
-masking exactly the resistant subpopulation you're trying to find.
-Single-cell RNA-seq is the right call here: it lets you identify distinct
-cell clusters within the tumor and pinpoint which cells are driving
-resistance, which is essential information for designing a targeted therapy.
-
-**Liver response to canine distemper virus across a cohort.** Now suppose
-you're comparing liver transcriptomes between infected and healthy dogs
-across a cohort of 30 animals, looking for differentially expressed genes
-between the groups. This is a classic bulk RNA-seq use case: you're comparing
-overall gene expression across groups at scale, bulk sequencing is
-cost-effective, it's statistically powerful for differential expression
-testing, and single-cell resolution simply isn't needed to answer this
-particular question.
-
-**Equine neuroaxonal dystrophy and spatial neuroinflammation.** If the
-question is which brain regions show abnormal gene expression, and whether
-there's a spatial gradient of neuroinflammation from the core of a lesion out
-to its periphery, spatial transcriptomics is the tool that fits. It maps gene
-expression directly within tissue sections while preserving anatomical
-context, so you can visualize the inflammation gradient and understand how
-the lesion microenvironment is organized — information that both bulk and
-single-cell approaches would lose entirely, since neither preserves the
-tissue's physical layout.
-
-**A poorly healing canine wound.** Imagine biopsying a wound and wanting to
-know where fibroblasts are being activated, how the wound margin differs from
-its center, and which signaling pathways are spatially coordinated. Again,
-spatial transcriptomics is the answer, because it preserves tissue
-architecture — showing gene expression *in situ* and revealing activation
-gradients and cell-cell communication zones that neither bulk nor
-single-cell sequencing can localize.
-
-**Immune tolerance in bovine intestinal mucosa.** If you're trying to
-understand how different immune cell populations — T cells, macrophages,
-dendritic cells — coordinate their responses to commensal bacteria,
-single-cell RNA-seq is the right resolution. It lets you dissect the immune
-landscape cell by cell, identify rare cell populations, and determine how
-each cell type individually responds. Bulk RNA-seq would mix all of those
-signals together and mask the differences between populations.
-
-**Evaluating a new avian influenza vaccine.** Finally, suppose you need to
-compare whole-blood transcriptomes of vaccinated versus unvaccinated chickens
-at three, seven, and fourteen days post-vaccination, across fifty birds. A
-large cohort, multiple time points, and a group-level comparison is exactly
-what bulk RNA-seq is designed for: it's cost-effective at this scale and
-gives you the statistical power needed to draw conclusions across fifty
-animals. Single-cell sequencing would be prohibitively expensive here, and
-it isn't necessary to answer the question being asked.
 
 ## Bioinformatics in Bulk RNA-seq
 
@@ -205,6 +143,8 @@ stages, run in order:
 3. **Count reads** (commonly with featureCounts) — count how many copies of
    each gene's transcript were present, producing a count matrix.
 
+
+::: {.callout-note title="Vocabulary"}
 A few pieces of vocabulary are worth pinning down before going further. A
 **read** is the basic unit of sequencing output: a fragment of sequence that
 has actually been sequenced. **Depth** (or coverage) is the average number of
@@ -213,15 +153,18 @@ depth means greater sensitivity for detecting lowly expressed genes. The
 **count matrix** that comes out at the end has genes as rows and samples as
 columns, where each number is how many reads mapped to that gene in that
 sample.
+:::
 
-Two caveats are worth flagging early. First, raw counts are not directly
-comparable between samples — different samples can have different total
-sequencing depth, so counts need to be normalized before they can be compared
-meaningfully (more on this below). Second, and more fundamentally: a bad
-experimental design cannot be fixed computationally. Replication,
-randomization, and controlling for batch effects all have to happen *before*
-sequencing — no amount of downstream statistical cleverness recovers an
-experiment that wasn't designed properly in the first place.
+::: {.callout-note title="Two caveats"}
+First, raw counts are not directly comparable between samples — different
+samples can have different total sequencing depth, so counts need to be
+normalized before they can be compared meaningfully (more on this below).
+Second, and more fundamentally: a bad experimental design cannot be fixed
+computationally. Replication, randomization, and controlling for batch
+effects all have to happen *before* sequencing — no amount of downstream
+statistical cleverness recovers an experiment that wasn't designed properly
+in the first place.
+:::
 
 ### Alignment with STAR
 
@@ -231,6 +174,8 @@ intron spliced out. Detecting those exon-exon junctions requires an aligner
 built for the job. STAR (Spliced Transcripts Alignment to a Reference) is the
 standard tool: it's splicing-aware, handling spliced reads directly, and it's
 fast and accurate compared with older, unspliced aligners.
+
+![](images/star_steps.png)
 
 STAR's alignment process breaks down into four stages:
 
@@ -267,6 +212,8 @@ whether alignment quality is generally good — that is, whether most reads are
 mapping to the genome uniquely — and the content of the reads themselves:
 ribosomal RNA contamination, duplication levels, and sequencing depth.
 
+![](images/rnaseq_qualitychecks.png)
+
 **Trimming red flags.** Not all reads coming off the sequencer are
 trustworthy, and a few patterns are worth specifically watching for after
 trimming. Very short reads that remain after trimming are uninformative.
@@ -280,6 +227,7 @@ else depends on.
 
 More specifically, a few thresholds are useful rules of thumb:
 
+::: {.callout-warning title="Trimming red flags" collapse="true"}
 - **High adapter content** (more than roughly 10–15% of reads) suggests
   library prep issues or very short insert sizes. A little adapter
   contamination is normal; a lot means something went wrong during library
@@ -303,6 +251,8 @@ More specifically, a few thresholds are useful rules of thumb:
 - **Low percentage of reads surviving trimming** (below roughly 70–75%)
   means a large fraction of the data was unusable before the analysis even
   began.
+:::
+
 
 **Alignment red flags.** Once reads are aligned, the single most important
 metric is the overall mapping rate: reads that don't map anywhere are
@@ -310,40 +260,33 @@ invisible to every downstream analysis. As a real example, a set of samples
 from a time-course experiment (D0, D7, and D14, three replicates each)
 mapped at rates in the low-to-mid 80% range:
 
-| Sample | Mapping rate |
-|---|---|
-| D0_R1 | 84.65% |
-| D0_R2 | 86.06% |
-| D0_R3 | 84.39% |
-| D7_R1 | 85.29% |
-| D7_R2 | 85.59% |
-| D7_R3 | 81.25% |
-| D14_R1 | 84.81% |
-| D14_R2 | 84.21% |
-| D14_R3 | 84.65% |
-
-A low overall mapping rate (below roughly 70–75%) commonly points to one of a
+::: {.callout-warning title="Alignment red flags" collapse="true"}
+- A low overall mapping rate (below roughly 70–75%) commonly points to one of a
 few causes: the wrong reference genome or annotation, heavy rRNA or adapter
 contamination, RNA degradation, or sequencing a strain that's genomically
-divergent from the reference. A very high multimapping rate — reads that map
+divergent from the reference. 
+- A very high multimapping rate — reads that map
 equally well to many genomic locations — usually reflects repetitive elements
 or paralogous gene families (that is, a substantial number of reads mapping
 to somewhere between one and ten loci, versus reads mapping to ten or more
-loci and being effectively unresolvable). Uneven coverage across a gene
+loci and being effectively unresolvable). 
+- Uneven coverage across a gene
 body is another red flag: a 3' bias (reads piling up toward the 3' end of
 transcripts) suggests RNA degradation, since RNA degrades from the 5' end
 first and leaves the 3' end better represented; a 5' bias instead points to
 a problem in library prep chemistry. Either pattern is worth investigating
-by looking at individual genes in a genome browser like IGV. A
-strand-specificity mismatch — where the alignment parameters don't match how
+by looking at individual genes in a genome browser like IGV. 
+- A strand-specificity mismatch — where the alignment parameters don't match how
 the library was actually prepared (stranded versus unstranded) — causes
 reads to be assigned to the wrong gene or discarded outright, so it's worth
 confirming the library's strandedness with whoever ran the sequencing before
-choosing alignment parameters. Finally, inconsistent mapping rates across
+choosing alignment parameters.
+- Inconsistent mapping rates across
 samples are a problem in their own right: if one sample maps at 90% and
 another at 40%, the two are not comparable, and the low-quality sample may
 need to be excluded — which in turn affects statistical power and the
 overall experimental design.
+:::
 
 ### From aligned reads to a count matrix
 
@@ -354,6 +297,7 @@ of reads that mapped to that gene in that sample. This raw counts table is
 the deliverable of the entire upstream pipeline, and it's the starting point
 for differential expression analysis.
 
+
 ## Differential Expression Analysis
 
 ### Why counts need their own statistics
@@ -363,13 +307,13 @@ level in one condition compared with another, consistently across
 replicates. Answering that question rigorously requires the right
 statistical model for count data, and RNA-seq counts have a distinctive
 shape: they are not normally distributed, and they are over-dispersed —
-meaning the variance is greater than the mean. Most genes have low counts,
-a handful of genes (housekeeping genes, ribosomal genes) have very high
-counts, and counts are bounded at zero, since you can't have a negative
-number of reads. That zero boundary forces any spread in the data to go
-rightward.
+meaning the variance is greater than the mean: 
 
-A Poisson distribution — a natural first guess for count data — has only one
+![Distribution of expression counts](images/expression_distribution.png)
+
+Most genes have low counts,a handful of genes (housekeeping genes, ribosomal genes) have very highcounts, and counts are bounded at zero, since you can't have a negative number of reads. That zero boundary forces any spread in the data to go rightward.
+
+**A Poisson distribution** — a natural first guess for count data — has only one
 parameter (λ), which forces variance to equal the mean. Because RNA-seq
 counts are over-dispersed, a Poisson model systematically underestimates the
 real spread in the data, which makes test statistics look more significant
